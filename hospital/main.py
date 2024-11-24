@@ -6,8 +6,7 @@ import traceback
 from os import environ
 from loguru import logger
 from utils import hex2str, str2hex
-from py_expression_eval import Parser
-from routes import inspect_routing
+from routes import inspect_routing, AppState
 
 
 rollup_server = environ["ROLLUP_HTTP_SERVER_URL"]
@@ -43,6 +42,8 @@ def handle_advance(data):
         logger.info(f"Received input: {payload}")
 
         output = payload
+        AppState.variable += 1
+        logger.debug(f"State variable is now {AppState.variable}")
 
         logger.info(f"Adding notice with payload: '{output}'")
         add_notice(output)
