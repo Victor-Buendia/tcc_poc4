@@ -1,9 +1,11 @@
+PROJECT=hospital
+
 all:
 	$(MAKE) build
 	$(MAKE) run
 
 	
 build:
-	cartesi build
+	(cd ${PROJECT} && cartesi build)
 run:
-	cartesi run
+	(cd ${PROJECT} && cartesi run)
