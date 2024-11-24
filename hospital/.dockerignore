@@ -1,0 +1,6 @@
+.cartesi
+Dockferfile
+poetry.lock
+pyproject.toml
+README.md
+.gitignore
