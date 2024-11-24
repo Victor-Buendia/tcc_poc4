@@ -1,0 +1,15 @@
+meta {
+  name: Create Transaction
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://0.0.0.0:8000/advance
+  body: json
+  auth: none
+}
+
+body:json {
+  {"message": "hello world"}
+}

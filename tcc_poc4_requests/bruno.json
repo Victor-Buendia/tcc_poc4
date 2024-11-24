@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "tcc_poc4",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
