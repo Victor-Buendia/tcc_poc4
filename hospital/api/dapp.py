@@ -123,6 +123,7 @@ def access_data_transaction(medico: TokenMedico):
             "type": "access",
             "attributes": {
                 "patient_did": medico.paciente_did,
+                "token": medico.token
             }
         }
     }
@@ -131,12 +132,14 @@ def access_data_transaction(medico: TokenMedico):
     @listen()
     def get_read_permission():
         allowed_reads = inspect("/allowed_reads")
-        return allowed_reads["response"]["allowed_reads"].get(medico.did)
+        if medico.did in allowed_reads["response"]["allowed_reads"].get(medico.token, []):
+            return medico.token
+        return None
     retrieved_token = get_read_permission()
-    logger.info(f"Retrieved token: {retrieved_token}")
+    logger.info(f"Acess granted to doctor {medico.did} for token: {retrieved_token}")
 
     if retrieved_token is None:
-        raise HTTPException(status_code=404, detail=f"No read permission granted to doctor {medico.did}.")
+        raise HTTPException(status_code=404, detail=f"No read permission granted to doctor {medico.did} for token: {medico.token}.")
     
     data = inspect(f"/access_tokens")["response"]["access_tokens"][medico.paciente_did].get(retrieved_token)
 

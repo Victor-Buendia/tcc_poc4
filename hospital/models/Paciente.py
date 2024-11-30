@@ -17,8 +17,8 @@ def remove_token(payload):
     
     if AppState.access_tokens.get(patient_did).get(token):
         del AppState.access_tokens[patient_did][token]
-    if AppState.allowed_reads.get(doctor_did) == token:
-        del AppState.allowed_reads[doctor_did]
+    if doctor_did in AppState.allowed_reads.get(token, []):
+        AppState.allowed_reads[token].remove(doctor_did)
 
     return "accept"
 

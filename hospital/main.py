@@ -15,6 +15,11 @@ graphql_server = environ["GRAPHQL_SERVER_URL"]
 
 logger.info(f"HTTP rollup_server url is {rollup_server}")
 
+def custom_serializer(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError("Type not serializable")
+
 def init():
     logger.info("First run, retrieving data from Blockchain")
 
@@ -33,7 +38,7 @@ def init():
 
 
 def add_notice(output):
-    payload = json.dumps(output)
+    payload = json.dumps(output, default=custom_serializer)
     response = requests.post(
         rollup_server + "/notice", json={"payload": str2hex(payload)}
     )
@@ -43,7 +48,7 @@ def add_notice(output):
 
 
 def add_report(output):
-    payload = json.dumps(output)
+    payload = json.dumps(output, default=custom_serializer)
     response = requests.post(
         rollup_server + "/report", json={"payload": str2hex(payload)}
     )

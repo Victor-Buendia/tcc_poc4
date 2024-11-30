@@ -2,7 +2,7 @@ from functools import wraps
 from loguru import logger
 import time
 
-def listen(retries=3, backoff=2):
+def listen(retries=3, backoff=0.5):
     def decorator(func):
         @wraps(func)
         def attempt(*args, **kwargs):
