@@ -4,6 +4,7 @@ class Medico(Pessoa):
     especialidade: str = Field(..., example="Cardiologista")
     crm: str = Field(..., example="123456")
 
+@catch
 def create_doctor(payload):
     did = payload["did"]
 

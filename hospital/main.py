@@ -15,11 +15,8 @@ graphql_server = environ["GRAPHQL_SERVER_URL"]
 
 logger.info(f"HTTP rollup_server url is {rollup_server}")
 
-first_run = True
-
 def init():
     logger.info("First run, retrieving data from Blockchain")
-    first_run = False
 
     response = requests.post(graphql_server, json={"query": "query notices { notices { edges { node { index input { index } payload } } } }"})
     logger.info(f"Received response ]{response.json()}")
@@ -56,9 +53,6 @@ def add_report(output):
 
 
 def handle_advance(data):
-    if first_run:
-        init()
-        
     logger.info(f"Received advance request data {data}")
 
     try:
@@ -73,7 +67,8 @@ def handle_advance(data):
         logger.info(f"Handling method {method}")
 
         response = handler(payload)
-        logger.info(f"Method {method} returned status {response}")
+        color = "magenta" if response == "accept" else "red"
+        logger.opt(colors=True).info(f"Method <{color}>{method}</{color}> returned status <{color}>{response}</{color}>")
         
         if response == "reject":
             return "reject"
@@ -113,9 +108,9 @@ handlers = {
 }
 
 finish = {"status": "accept"}
+first_run = True
 
 while True:
-
     logger.info("Sending finish")
     response = requests.post(rollup_server + "/finish", json=finish)
     logger.info(f"Received finish status {response.status_code}")
@@ -124,6 +119,10 @@ while True:
     else:
         rollup_request = response.json()
         logger.info(rollup_request)
+
+        if first_run:
+            init()
+            first_run = False
 
         handler = handlers[rollup_request["request_type"]]
         finish["status"] = handler(rollup_request["data"])

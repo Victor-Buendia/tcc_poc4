@@ -4,6 +4,7 @@ class Paciente(Pessoa):
     tipo_sanguineo: str = Field(..., example="A+")
     peso: float = Field(..., example=80.0)
 
+@catch
 def create_patient(payload):
     did = payload["did"]
 

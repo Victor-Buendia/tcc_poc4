@@ -1,11 +1,11 @@
 from fastapi import FastAPI, Request
 from wallet import encryption
-from dapp import backend
+from dapp import frontend
 from hospital.utils import hex2str
 
 app = FastAPI()
 app.include_router(encryption)
-app.include_router(backend)
+app.include_router(frontend)
 
 
 @app.get("/")
