@@ -1,4 +1,5 @@
 from hospital.models.Paciente import create_patient
+from hospital.models.Medico import create_doctor
 from hospital.state import AppState
 
 inspect_routing = {
@@ -8,8 +9,10 @@ inspect_routing = {
 
 init_routing = {
     "create_patient": create_patient,
+    "create_doctor": create_doctor
 }
 
 advance_routing = {
     "create_patient": create_patient,
+    "create_doctor": create_doctor,
 }

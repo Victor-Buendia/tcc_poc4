@@ -1,3 +1,3 @@
 class AppState:
-    variable = 0
     patients_list = {}
+    doctors_list = {}

@@ -1,16 +1,13 @@
 from hospital.models.Paciente import Paciente, create_patient
-from hospital.state import AppState
-from hospital.api.transaction import create_transaction
+from hospital.models.Medico import Medico, create_doctor
 from hospital.api import *
-from hospital.libs import *
-from loguru import logger
 
 backend = APIRouter(
     prefix="/dapp",
     tags=["DApp"],
 )
 
-@backend.get("/get_appstate")
+@backend.get("/appstate")
 def get_appstate():
     from hospital.api.server import inspect
     app_state = inspect("/app_state")
@@ -27,8 +24,27 @@ def create_patient_transaction(paciente: Paciente):
         "did": did,
         "method": "create_patient",
         "data": {
-            "type": "Patient",
+            "type": "patient",
             "attributes": paciente_dict
+        }
+    }
+
+    result = advance(payload)
+    return result
+
+@backend.post("/create_doctor")
+def create_doctor_transaction(medico: Medico):
+    from hospital.api.server import advance
+
+    medico_dict = medico.model_dump()
+    did = "did:key:" + hash_text_sha256(medico_dict['public_key'])
+
+    payload = {
+        "did": did,
+        "method": "create_doctor",
+        "data": {
+            "type": "doctor",
+            "attributes": medico_dict
         }
     }
 
