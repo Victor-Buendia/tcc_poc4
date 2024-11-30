@@ -8,6 +8,8 @@ from hospital.libs import *
 from hospital.utils import *
 from functools import wraps
 
+import time
+
 def authenticate(auth: Autenticacao):
     from hospital.api.wallet import sign_msg, Decryption
     from hospital.api.server import advance, inspect
@@ -29,7 +31,9 @@ def authenticate(auth: Autenticacao):
 
     attempt = get_pending_auth()
     if not attempt:
-        raise HTTPException(status_code=404, detail="No pending authentication attempt. User probably doesn't exist or there was a problem with the authentication request.")
+        msg = "No pending authentication attempt. User probably doesn't exist or there was a problem with the authentication request."
+        logger.error(msg)
+        raise HTTPException(status_code=404, detail=msg)
 
     proof = sign_msg(Decryption(message=attempt["challenge"], private_key=auth.private_key))
     payload = {
@@ -56,7 +60,13 @@ def authenticate(auth: Autenticacao):
 
     final_auth = get_auth()
     if not final_auth:
-        raise HTTPException(status_code=404, detail="Authentication rejected.")
+        msg = "Authentication rejected."
+        logger.error(msg)
+        raise HTTPException(status_code=404, detail=msg)
+    if time.time() > final_auth["expires_at"]:
+        msg = "Authentication expired."
+        logger.error(msg)
+        raise HTTPException(status_code=401, detail=msg)
 
     return final_auth
 
@@ -72,7 +82,11 @@ def auth(func):
             if isinstance(x, Autenticacao):
                 did = x.did
                 logger.opt(colors=True).info(f"<black>Authenticating {x.did}...</black>")
-                result = authenticate(Autenticacao(public_key=x.public_key, private_key=x.private_key))
+                try:
+                    result = authenticate(Autenticacao(public_key=x.public_key, private_key=x.private_key))
+                except:
+                    logger.opt(colors=True).info(f"<red>Authentication failed for {x.did}.</red>")
+                    raise HTTPException(status_code=401, detail="Unauthorized.")
                 logger.opt(colors=True).info(f"<green>Authenticated {x.did} successfully.</green>")
             if result is None:
                 logger.opt(colors=True).info(f"<red>Authentication failed for {x.did}.</red>")

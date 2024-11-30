@@ -4,6 +4,8 @@ from loguru import logger
 from hospital.state import AppState
 from functools import wraps
 
+import time
+
 def verify_auth(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -11,6 +13,9 @@ def verify_auth(func):
 
         if did not in AppState.valid_auths:
             logger.error(f"DID {did} is not authenticated")
+            return "reject"
+        elif time.time() > AppState.valid_auths[did]["expires_at"]:
+            logger.error(f"Authentication for DID {did} has expired")
             return "reject"
 
         return func(*args, **kwargs)
