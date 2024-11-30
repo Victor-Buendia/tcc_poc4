@@ -1,22 +1,30 @@
 from fastapi import FastAPI, Request
+from wallet import encryption
+from dapp import backend
+from hospital.utils import hex2str
 
 app = FastAPI()
+app.include_router(encryption)
+app.include_router(backend)
 
 
 @app.get("/")
-async def root():
+def root():
     return {"message": "Hello World"}
 
-
-@app.post("/advance")
-async def advance(request: Request):
+def advance(payload):
+    import json
     from transaction import create_transaction
+    create_transaction(json.dumps(payload))
+    return {"status": "sent", "sent_data": payload}
 
-    body = await request.body()
-    data = body.decode("utf-8")
-    create_transaction(data)
-    return {"status": "accept", "sent_data": data}
-
+def inspect(payload):
+    import requests
+    import json
+    response = requests.get("http://localhost:8080/inspect" + payload)
+    data = response.json()["reports"].pop()["payload"]
+    data = hex2str(data)
+    return {"status": "ok", "response": json.loads(data)}
 
 if __name__ == "__main__":
     import uvicorn

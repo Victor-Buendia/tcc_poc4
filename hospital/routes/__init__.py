@@ -1,5 +1,15 @@
-class AppState:
-    variable = 0
+from hospital.models.Paciente import create_patient
+from hospital.state import AppState
 
+inspect_routing = {
+    "app_state": lambda _: {"AppState": {k:v for k,v in vars(AppState).items() if not k.startswith("__")}},
+    "patient_list": lambda _: AppState.patients_list
+}
 
-inspect_routing = {"variable": lambda x: AppState.variable}
+init_routing = {
+    "create_patient": create_patient,
+}
+
+advance_routing = {
+    "create_patient": create_patient,
+}

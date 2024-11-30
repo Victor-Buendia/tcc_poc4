@@ -6,11 +6,33 @@ import traceback
 from os import environ
 from loguru import logger
 from utils import hex2str, str2hex
-from routes import inspect_routing, AppState
+from hospital.state import AppState
+from routes import inspect_routing, init_routing, advance_routing
 
 
 rollup_server = environ["ROLLUP_HTTP_SERVER_URL"]
+graphql_server = environ["GRAPHQL_SERVER_URL"]
+
 logger.info(f"HTTP rollup_server url is {rollup_server}")
+
+first_run = True
+
+def init():
+    logger.info("First run, retrieving data from Blockchain")
+    first_run = False
+
+    response = requests.post(graphql_server, json={"query": "query notices { notices { edges { node { index input { index } payload } } } }"})
+    logger.info(f"Received response ]{response.json()}")
+
+    for notice in response.json()["data"]["notices"]["edges"]:
+        payload = notice["node"]["payload"]
+        data = json.loads(hex2str(payload))
+        method = data["method"]
+        logger.info(f"Received notice with method {method}")
+        handler = init_routing[method]
+        handler(data)
+
+    logger.info("Finished Blockchain sync up, starting rollup...")
 
 
 def add_notice(output):
@@ -34,27 +56,38 @@ def add_report(output):
 
 
 def handle_advance(data):
-    status = "accept"
+    if first_run:
+        init()
+        
     logger.info(f"Received advance request data {data}")
 
     try:
         payload = hex2str(data["payload"])
+        payload = json.loads(payload)
         logger.info(f"Received input: {payload}")
 
-        output = payload
-        AppState.variable += 1
-        logger.debug(f"State variable is now {AppState.variable}")
+        method = payload["method"]
+        logger.info(f"Received method {method}")
 
-        logger.info(f"Adding notice with payload: '{output}'")
-        add_notice(output)
+        handler = advance_routing[method]
+        logger.info(f"Handling method {method}")
+
+        response = handler(payload)
+        logger.info(f"Method {method} returned status {response}")
+        
+        if response == "reject":
+            return "reject"
+
+        logger.info(f"Adding notice with payload: '{payload}'")
+        add_notice(payload)
 
     except Exception as e:
-        status = "reject"
         msg = f"Error processing data {data}\n{traceback.format_exc()}"
         logger.error(msg)
         add_report({"error": msg})
+        return "reject"
 
-    return status
+    return "accept"
 
 
 def handle_inspect(data):
@@ -62,8 +95,14 @@ def handle_inspect(data):
     logger.info("Adding report")
     payload = hex2str(data["payload"])
 
-    response = inspect_routing[payload]
-    add_report({payload: response(payload)})
+    try:
+        handler = inspect_routing[payload]
+        add_report({payload: handler(payload)})
+    except Exception as e:
+        msg = f"Error processing data {data}\n{traceback.format_exc()}"
+        logger.error(msg)
+        add_report({"error": msg})
+        return "reject"
 
     return "accept"
 
@@ -76,6 +115,7 @@ handlers = {
 finish = {"status": "accept"}
 
 while True:
+
     logger.info("Sending finish")
     response = requests.post(rollup_server + "/finish", json=finish)
     logger.info(f"Received finish status {response.status_code}")
