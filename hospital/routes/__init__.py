@@ -1,4 +1,4 @@
-from hospital.models.Paciente import create_patient
+from hospital.models.Paciente import create_patient, share_data
 from hospital.models.Medico import create_doctor
 from hospital.models.Auth import authenticate_request, authenticate_response, attempt_authentication, remove_auth
 from hospital.state import AppState
@@ -12,6 +12,7 @@ inspect_routing = {
     "doctor_list": lambda _: AppState.doctors_list,
     "pending_auths": lambda _: AppState.pending_auths,
     "valid_auths": lambda _: AppState.valid_auths,
+    "access_tokens": lambda _: AppState.access_tokens,
 }
 
 advance_routing = {
@@ -21,6 +22,7 @@ advance_routing = {
     "auth_response": authenticate_response,
     "auth_attempt": attempt_authentication,
     "auth_removal": remove_auth,
+    "create_access_token": share_data,
 }
 
 init_routing = advance_routing.copy()

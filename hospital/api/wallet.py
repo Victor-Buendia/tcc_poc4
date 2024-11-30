@@ -1,9 +1,12 @@
 import os
+import base64 
 
 from typing import Union, List
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import padding as sym_padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from pydantic import BaseModel, Field
 from fastapi import FastAPI, Query, APIRouter
 
@@ -31,6 +34,35 @@ class Decryption(BaseModel):
 def root():
     return {"Health Status": "OK"}
 
+@encryption.post("/sym_encrypt")
+def sym_encrypt(data: str, key: str):
+    iv = os.urandom(16)
+
+    cipher = Cipher(algorithms.AES(bytes.fromhex(key)), modes.CBC(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+    padder = sym_padding.PKCS7(128).padder()
+    
+    padded_data = padder.update(data.encode()) + padder.finalize()
+    encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
+    
+    return {
+        "iv": base64.b64encode(iv).decode(),
+        "encrypted_message": base64.b64encode(encrypted_data).decode()
+    }
+
+@encryption.post("/sym_decrypt")
+def sym_decrypt(encrypted_data: str, key: str, iv: str):
+    iv = base64.b64decode(iv)
+    encrypted_data = base64.b64decode(encrypted_data)
+    
+    cipher = Cipher(algorithms.AES(bytes.fromhex(key)), modes.CBC(iv), backend=default_backend())
+    decryptor = cipher.decryptor()
+    unpadder = sym_padding.PKCS7(128).unpadder()
+    
+    decrypted_padded_data = decryptor.update(encrypted_data) + decryptor.finalize()
+    decrypted_data = unpadder.update(decrypted_padded_data) + unpadder.finalize()
+    
+    return decrypted_data.decode()
 
 @encryption.get("/keygen")
 def rsa_keygen():

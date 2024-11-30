@@ -4,6 +4,18 @@ from loguru import logger
 from hospital.state import AppState
 from functools import wraps
 
+def verify_auth(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        did = args[0]["did"]
+
+        if did not in AppState.valid_auths:
+            logger.error(f"DID {did} is not authenticated")
+            return "reject"
+
+        return func(*args, **kwargs)
+    return wrapper
+
 def catch(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
