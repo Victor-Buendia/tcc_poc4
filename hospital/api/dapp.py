@@ -1,5 +1,5 @@
 from hospital.models.Paciente import Paciente, TokenPaciente, create_patient
-from hospital.models.Medico import Medico, create_doctor
+from hospital.models.Medico import Medico, TokenMedico, create_doctor
 from hospital.api import *
 
 frontend = APIRouter(
@@ -35,6 +35,12 @@ def get_access_tokens():
     app_state = inspect("/access_tokens")
     return app_state
 
+@frontend.get("/allowed_reads", tags=["Debugging"])
+def get_allowed_reads():
+    from hospital.api.server import inspect
+    app_state = inspect("/allowed_reads")
+    return app_state
+
 @frontend.post("/create_patient", tags=["Frontend"])
 def create_patient_transaction(paciente: Paciente):
     from hospital.api.server import advance
@@ -68,7 +74,7 @@ def create_doctor_transaction(medico: Medico):
     return result
 
 @frontend.post("/create_access_token", tags=["Frontend"])
-@auth
+# @auth
 def create_access_token_transaction(paciente: TokenPaciente):
     from hospital.api.server import advance
     from hospital.models import Pessoa
@@ -103,3 +109,64 @@ def create_access_token_transaction(paciente: TokenPaciente):
 
     result = advance(payload)
     return result
+
+@frontend.post("/access_data", tags=["Frontend"])
+# @auth
+def access_data_transaction(medico: TokenMedico):
+    from hospital.api.server import advance, inspect
+    from hospital.api.wallet import sym_decrypt, decrypt_msg, Decryption
+
+    payload = {
+        "did": medico.did,
+        "method": "access_data",
+        "data": {
+            "type": "access",
+            "attributes": {
+                "patient_did": medico.paciente_did,
+            }
+        }
+    }
+    result = advance(payload)
+
+    @listen()
+    def get_read_permission():
+        allowed_reads = inspect("/allowed_reads")
+        return allowed_reads["response"]["allowed_reads"].get(medico.did)
+    retrieved_token = get_read_permission()
+    logger.info(f"Retrieved token: {retrieved_token}")
+
+    if retrieved_token is None:
+        raise HTTPException(status_code=404, detail=f"No read permission granted to doctor {medico.did}.")
+    
+    data = inspect(f"/access_tokens")["response"]["access_tokens"][medico.paciente_did].get(retrieved_token)
+
+    if data is None:
+        raise HTTPException(status_code=404, detail=f"No data was shared with doctor {medico.did}.")
+
+    decrypted_iv = decrypt_msg(Decryption(message=data["encrypted_iv"], private_key=medico.private_key))["decrypted_message"]
+    decrypted_key = decrypt_msg(Decryption(message=data["encrypted_key"], private_key=medico.private_key))["decrypted_message"]
+    decrypted_data = sym_decrypt(encrypted_data=data["shared_data"], key=decrypted_key, iv=decrypted_iv)
+
+    decrypted_data = {
+            "token": retrieved_token,
+            "patient_did": data["patient_did"],
+            "doctor_did": data["doctor_did"],
+            "shared_data": decrypted_data,
+            "expires_at": data["expires_at"]
+    }
+
+    payload = {
+        "did": medico.did,
+        "method": "remove_token",
+        "data": {
+            "type": "remove_token",
+            "attributes": {
+                "token": retrieved_token,
+                "patient_did": data["patient_did"],
+                "doctor_did": data["doctor_did"]
+            }
+        }
+    }
+    result = advance(payload)
+
+    return {"response": decrypted_data, "status": "ok"}

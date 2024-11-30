@@ -4,3 +4,4 @@ class AppState:
     pending_auths = {}
     valid_auths = {}
     access_tokens = {}
+    allowed_reads = {}
