@@ -1,6 +1,5 @@
-from hospital.models.Paciente import Paciente, create_patient
+from hospital.models.Paciente import Paciente, TokenPaciente, create_patient
 from hospital.models.Medico import Medico, create_doctor
-from hospital.models.Auth import Autenticacao
 from hospital.api import *
 
 frontend = APIRouter(
@@ -8,25 +7,29 @@ frontend = APIRouter(
     tags=["DApp"],
 )
 
-@frontend.get("/appstate")
+@frontend.post("/authenticate", tags=["Debugging"])
+def authenticate_transaction(auth: Autenticacao):
+    return authenticate(auth)
+
+@frontend.get("/appstate", tags=["Debugging"])
 def get_appstate():
     from hospital.api.server import inspect
     app_state = inspect("/appstate")
     return app_state
 
-@frontend.get("/pending_auths")
+@frontend.get("/pending_auths", tags=["Debugging"])
 def get_pending_auths():
     from hospital.api.server import inspect
     app_state = inspect("/pending_auths")
     return app_state
 
-@frontend.get("/valid_auths")
+@frontend.get("/valid_auths", tags=["Debugging"])
 def get_valid_auths():
     from hospital.api.server import inspect
     app_state = inspect("/valid_auths")
     return app_state
 
-@frontend.post("/create_patient")
+@frontend.post("/create_patient", tags=["Frontend"])
 def create_patient_transaction(paciente: Paciente):
     from hospital.api.server import advance
 
@@ -42,7 +45,7 @@ def create_patient_transaction(paciente: Paciente):
     result = advance(payload)
     return result
 
-@frontend.post("/create_doctor")
+@frontend.post("/create_doctor", tags=["Frontend"])
 def create_doctor_transaction(medico: Medico):
     from hospital.api.server import advance
 
@@ -57,56 +60,10 @@ def create_doctor_transaction(medico: Medico):
 
     result = advance(payload)
     return result
-    
-@frontend.post("/authenticate")
-def authenticate_transaction(auth: Autenticacao):
-    from hospital.api.wallet import sign_msg, Decryption
-    from hospital.api.server import advance, inspect
-    import os
 
-    payload = {
-        "did": auth.did,
-        "method": "auth_request",
-        "data": {
-            "public_key": auth.public_key
-        },
-    }
-    result = advance(payload)
-
-    @listen()
-    def get_pending_auth():
-        pending_auths = inspect("/pending_auths")
-        return pending_auths["response"]["pending_auths"].get(auth.did)
-
-    attempt = get_pending_auth()
-    if not attempt:
-        raise HTTPException(status_code=404, detail="No pending authentication attempt. User probably doesn't exist or there was a problem with the authentication request.")
-
-    proof = sign_msg(Decryption(message=attempt["challenge"], private_key=auth.private_key))
-    payload = {
-        "did": auth.did,
-        "method": "auth_response",
-        "data": {
-            "proof": proof["signature"],
-        },
-    }
-    result = advance(payload)
-
-    attempt = get_pending_auth()
-    payload = {
-        "did": auth.did,
-        "method": "auth_attempt",
-        "data": {}
-    }
-    result = advance(payload)
-
-    @listen()
-    def get_auth():
-        valid_auths = inspect("/valid_auths")
-        return valid_auths["response"]["valid_auths"].get(auth.did)
-
-    final_auth = get_auth()
-    if not final_auth:
-        raise HTTPException(status_code=404, detail="Authentication rejected.")
-
-    return final_auth
+@frontend.post("/create_access_token", tags=["Frontend"])
+@auth
+def create_access_token_transaction(paciente: TokenPaciente):
+    import time
+    time.sleep(5)
+    pass

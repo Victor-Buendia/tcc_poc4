@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field
-from hospital.api import *
 from hospital.libs import *
 from loguru import logger
 from hospital.state import AppState

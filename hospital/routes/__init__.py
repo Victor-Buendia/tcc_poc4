@@ -1,6 +1,6 @@
 from hospital.models.Paciente import create_patient
 from hospital.models.Medico import create_doctor
-from hospital.models.Auth import *
+from hospital.models.Auth import authenticate_request, authenticate_response, attempt_authentication, remove_auth
 from hospital.state import AppState
 
 def _pass(payload):
@@ -20,6 +20,7 @@ advance_routing = {
     "auth_request": authenticate_request,
     "auth_response": authenticate_response,
     "auth_attempt": attempt_authentication,
+    "auth_removal": remove_auth,
 }
 
 init_routing = advance_routing.copy()

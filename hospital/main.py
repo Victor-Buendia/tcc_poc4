@@ -61,7 +61,7 @@ def handle_advance(data):
         logger.info(f"Received input: {payload}")
 
         method = payload["method"]
-        logger.info(f"Received method {method}")
+        logger.opt(colors=True).info(f"<WHITE>Received method {method}</WHITE>")
 
         handler = advance_routing[method]
         logger.info(f"Handling method {method}")

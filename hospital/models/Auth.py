@@ -10,11 +10,15 @@ class Autenticacao(BaseModel):
     def did(self):
         return "did:key:" + hash_text_sha256(self.public_key)
 
-@catch
-def authenticate_request(payload):
+def remove_auth(payload):
     did = payload["did"]
     if AppState.valid_auths.get(did):
         del AppState.valid_auths[did]
+    return "accept"
+@catch
+def authenticate_request(payload):
+    remove_auth(payload)
+    did = payload["did"]
 
     if not any(did in x for x in [AppState.patients_list, AppState.doctors_list]):
         logger.error(f"User with DID {did} doesn't exist")
@@ -60,7 +64,7 @@ def attempt_authentication(payload):
         try:
             AppState.valid_auths[did] = {
                 "status": "authenticated",
-                "expires": time.time() + 2*60, # 2 minutes
+                "expires_at": time.time() + 2*60, # 2 minutes
             }
             del AppState.pending_auths[did]
         except:
