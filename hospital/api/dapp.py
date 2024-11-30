@@ -74,7 +74,7 @@ def create_doctor_transaction(medico: Medico):
     return result
 
 @frontend.post("/create_access_token", tags=["Frontend"])
-# @auth
+@auth
 def create_access_token_transaction(paciente: TokenPaciente):
     from hospital.api.server import advance
     from hospital.models import Pessoa
@@ -102,7 +102,7 @@ def create_access_token_transaction(paciente: TokenPaciente):
                 "shared_data": encrypted_data["encrypted_message"],
                 "encrypted_iv": encrypt_msg(Encryption(message=encrypted_data["iv"], public_key=medico.public_key))["encrypted_message"],
                 "encrypted_key": encrypt_msg(Encryption(message=key, public_key=medico.public_key))["encrypted_message"],
-                "expires_at": time.time() + 2*60 # 2 minutes
+                "expires_at": time.time() + paciente.minutes_to_expire*60 # 2 minutes
             }
         }
     }
@@ -111,7 +111,7 @@ def create_access_token_transaction(paciente: TokenPaciente):
     return result
 
 @frontend.post("/access_data", tags=["Frontend"])
-# @auth
+@auth
 def access_data_transaction(medico: TokenMedico):
     from hospital.api.server import advance, inspect
     from hospital.api.wallet import sym_decrypt, decrypt_msg, Decryption

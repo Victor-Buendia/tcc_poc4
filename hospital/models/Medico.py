@@ -1,13 +1,13 @@
 from hospital.models import *
-from hospital.models.Auth import Autenticacao
+from hospital.models.Auth import Autenticacao, verify_auth
 
 class Medico(Pessoa):
     especialidade: str = Field(..., example="Cardiologista")
-    crm: str = Field(..., example="123456")
+    crm: str = Field(..., example="CRM/DF 123456")
 
 class TokenMedico(Autenticacao):
-    paciente_did: str = Field(..., example="123456789")
-    token: str = Field(..., example="123456789")
+    paciente_did: str = Field(..., example="did:key:f930ed9de791aade7367240f76cf0ab22cfca2d7b957a373214abd7703fc8054")
+    token: str = Field(..., example="d6c7f73a1a8f1d564314a72cd3eade62")
 
 @catch
 def create_doctor(payload):
@@ -20,6 +20,7 @@ def create_doctor(payload):
     AppState.doctors_list[did] = payload["data"]["attributes"]
     return "accept"
 
+@verify_auth
 def access_data(payload):
     import time
     from hospital.routes import inspect_routing
