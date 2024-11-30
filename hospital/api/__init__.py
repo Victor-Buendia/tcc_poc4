@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, APIRouter, HTTPException
+from fastapi import FastAPI, Request, APIRouter, HTTPException, Body
 from pydantic import BaseModel, Field
 from loguru import logger
 from hospital.state import AppState
