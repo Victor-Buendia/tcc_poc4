@@ -24,7 +24,7 @@ def init():
     logger.info("First run, retrieving data from Blockchain")
 
     response = requests.post(graphql_server, json={"query": "query notices { notices { edges { node { index input { index } payload } } } }"})
-    logger.info(f"Received response ]{response.json()}")
+    logger.info(f"Received response: {response.json()}")
 
     for notice in response.json()["data"]["notices"]["edges"]:
         payload = notice["node"]["payload"]

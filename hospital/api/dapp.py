@@ -1,14 +1,30 @@
 from hospital.models.Paciente import Paciente, TokenPaciente, create_patient
 from hospital.models.Medico import Medico, TokenMedico, create_doctor
 from hospital.api import *
+from os import environ
 
 frontend = APIRouter(
     prefix="/dapp",
 )
 
+graphql_server = environ["GRAPHQL_SERVER_URL"]
+
 @frontend.post("/authenticate", tags=["Debugging"])
 def authenticate_transaction(auth: Autenticacao):
     return authenticate(auth)
+
+@frontend.get("/blockchain", tags=["Debugging"])
+def get_blockchain():
+    import requests
+    import json
+    
+    response = requests.post(graphql_server, json={"query": "query notices { notices { edges { node { index input { index } payload } } } }"})
+    data = response.json()
+
+    for node in data["data"]["notices"]["edges"]:
+        node["node"]["payload"] = json.loads(hex2str(node["node"]["payload"]))
+
+    return data
 
 @frontend.get("/appstate", tags=["Debugging"])
 def get_appstate():
