@@ -125,9 +125,9 @@ while True:
         rollup_request = response.json()
         logger.info(rollup_request)
 
-        if first_run:
-            init()
-            first_run = False
+        # if first_run:
+        #     init()
+        #     first_run = False
 
         handler = handlers[rollup_request["request_type"]]
         finish["status"] = handler(rollup_request["data"])
