@@ -2,19 +2,12 @@ PROJECT=hospital
 GRAPHQL_SERVER_URL="http://localhost:8080/graphql"
 ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:8080/host-runner"
 
-all:
-	$(MAKE) build
-	$(MAKE) run
-
-	
 build:
 	(cd ${PROJECT} && cartesi build)
-run:
-	(cd ${PROJECT} && cartesi run)
 
 run-node:
 	(cd ${PROJECT} && cartesi run --no-backend)
 run-backend:
-	ls hospital/**/*.py | GRAPHQL_SERVER_URL=${GRAPHQL_SERVER_URL} ROLLUP_HTTP_SERVER_URL=${ROLLUP_HTTP_SERVER_URL} entr -r python3 hospital/main.py
+	ls ${PROJECT}/**/*.py | GRAPHQL_SERVER_URL=${GRAPHQL_SERVER_URL} ROLLUP_HTTP_SERVER_URL=${ROLLUP_HTTP_SERVER_URL} entr -r python3 ${PROJECT}/main.py
 run-server:
-	ls hospital/**/*.py | GRAPHQL_SERVER_URL=${GRAPHQL_SERVER_URL} ROLLUP_HTTP_SERVER_URL=${ROLLUP_HTTP_SERVER_URL} entr -r python3 hospital/api/server.py
+	ls ${PROJECT}/**/*.py | GRAPHQL_SERVER_URL=${GRAPHQL_SERVER_URL} ROLLUP_HTTP_SERVER_URL=${ROLLUP_HTTP_SERVER_URL} entr -r python3 ${PROJECT}/api/server.py
