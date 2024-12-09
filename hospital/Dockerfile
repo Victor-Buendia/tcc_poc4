@@ -43,7 +43,8 @@ EOF
 COPY . ./hospital
 
 ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
-ENV GRAPHQL_SERVER_URL="http://127.0.0.1:8080/graphql"
+ENV GRAPHQL_SERVER_URL="http://host.docker.internal:8080/graphql"
+ENV DETTACHED=False
 
 ENTRYPOINT ["rollup-init"]
 CMD ["python3", "hospital/main.py"]

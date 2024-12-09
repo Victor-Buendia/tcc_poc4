@@ -12,8 +12,11 @@ from routes import inspect_routing, init_routing, advance_routing
 
 rollup_server = environ["ROLLUP_HTTP_SERVER_URL"]
 graphql_server = environ["GRAPHQL_SERVER_URL"]
+dettached = environ.get("DETTACHED", "True").lower() == "true"
 
 logger.info(f"HTTP rollup_server url is {rollup_server}")
+logger.info(f"HTTP graphql_server url is {graphql_server}")
+logger.info(f"Detached mode is {dettached} of type {type(dettached)}")
 
 def custom_serializer(obj):
     if isinstance(obj, set):
@@ -125,9 +128,11 @@ while True:
         rollup_request = response.json()
         logger.info(rollup_request)
 
-        # if first_run:
-        #     init()
-        #     first_run = False
+        logger.info(f"Init value is {first_run} and dettached is {dettached}")
+        if first_run and dettached:
+            logger.info("Init value is True, starting sync up")
+            init()
+            first_run = False
 
         handler = handlers[rollup_request["request_type"]]
         finish["status"] = handler(rollup_request["data"])
