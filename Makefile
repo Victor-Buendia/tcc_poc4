@@ -9,6 +9,8 @@ all:
 	
 build:
 	(cd ${PROJECT} && cartesi build)
+	python3 -m venv venv && source ./venv/bin/activate
+	pip install -r hospital/requirements.txt
 run:
 	(cd ${PROJECT} && cartesi run)
 
