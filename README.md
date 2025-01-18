@@ -4,9 +4,9 @@ Este repositório é fruto de um TCC com o foco de pesquisa sendo **"Um Estudo E
 
 # Pré Requisitos
 
-O projeto precisa do Docker versão 26.1.4 ou superior e Docker Compose 2.27.0 ou superior para funcionar de maneira correta. Também é utilizado Node v.22.11.0 para a instalação da biblioteca Cartesi v1.5.
+O projeto precisa do Docker versão 26.1.4, ou superior, e Docker Compose 2.27.0, ou superior, e Python 3.10, ou superior, para funcionar de maneira correta. Também é utilizado Node v.22.11.0 para a instalação da biblioteca Cartesi v1.5.
 
-1. Instale o Docker e Docker Compose
+1. Instale o Python, o Docker e o Docker Compose
 2. Instale o Node
 3. Instale a biblioteca [Cartesi v1.5](https://docs.cartesi.io/cartesi-rollups/1.5/quickstart/)
 4. Clone o repositório
@@ -23,12 +23,16 @@ O projeto precisa do Docker versão 26.1.4 ou superior e Docker Compose 2.27.0 o
 
 # Modo de Uso
 
-Todos os códigos podem ser consultados no [Makefile](https://github.com/Victor-Buendia/tcc_poc4/blob/main/Makefile) do projeto, sendo o próprio código a documentação de seu uso. Para executar o pipeline completo, altere os valores de volume em [`docker.env`](https://github.com/Victor-Buendia/tcc_poc4/blob/main/docker.env) e execute `make pipeline`.
+Todos os códigos podem ser consultados no [Makefile](https://github.com/Victor-Buendia/tcc_poc4/blob/main/Makefile) do projeto, sendo o próprio código a documentação de seu uso.
+
+A API que simula o *frontend* da aplicação pode ser acessada em [http://localhost:8000](http://localhost:8000). Vários exemplos de requisições contra essa API podem ser encontrados em [tcc_poc4_requests](https://github.com/Victor-Buendia/tcc_poc4/tree/main/tcc_poc4_requests). A documentação da API pode ser encontrada em [http://localhost:8000/docs](http://localhost:8000/docs).
+
+Os *logs* podem ser vistos pela API, pelo *backend* e pelo nó Cartesi.
 
 ---
 # Licença de Uso
 
-A licença para uso e redistribuição deste material é [**ATRIBUIÇÃO-COMPARTILHAIGUAL 4.0 INTERNACIONAL**](https://creativecommons.org/licenses/by-sa/4.0/deed.pt-br) (CC BY-SA 4.0) e pode ser encontrada em [LICENSE](https://github.com/Victor-Buendia/tcc_poc4?tab=MIT-1-ov-file) a versão específica e válida para este repositório.
+A licença para uso e redistribuição deste material é [**ATRIBUIÇÃO-COMPARTILHAIGUAL 4.0 INTERNACIONAL**](https://creativecommons.org/licenses/by-sa/4.0/deed.pt-br) (CC BY-SA 4.0) e pode ser encontrada em [LICENSE](https://github.com/Victor-Buendia/tcc_poc4?tab=CC-BY-SA-4.0-1-ov-file) a versão específica e válida para este repositório.
 
 O *software* não deve ser usado para atividades ilegais ou que violem a privacidade de dados de terceiros e é obrigatória a atribuição de crédito ao autor original, não sendo permitido plágio.
 
