@@ -2,3 +2,4 @@ venv/
 refs/
 __pycache__/
 .cartesi
+node_modules/
