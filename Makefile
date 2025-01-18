@@ -10,13 +10,13 @@ all:
 build:
 	(cd ${PROJECT} && cartesi build)
 	python3 -m venv venv && source ./venv/bin/activate
-	pip install -r hospital/requirements.txt
+	pip install -r hospital/dev-requirements.txt
 run:
 	(cd ${PROJECT} && cartesi run)
 
 run-node:
 	(cd ${PROJECT} && cartesi run --no-backend)
 run-backend:
-	ls hospital/**/*.py | GRAPHQL_SERVER_URL=${GRAPHQL_SERVER_URL} ROLLUP_HTTP_SERVER_URL=${ROLLUP_HTTP_SERVER_URL} entr -r python3 hospital/main.py
+	ls hospital/**/*.py | PYTHONPATH=$$(pwd):${PYTHONPATH} GRAPHQL_SERVER_URL=${GRAPHQL_SERVER_URL} ROLLUP_HTTP_SERVER_URL=${ROLLUP_HTTP_SERVER_URL} entr -r python3 hospital/main.py
 run-server:
-	ls hospital/**/*.py | GRAPHQL_SERVER_URL=${GRAPHQL_SERVER_URL} ROLLUP_HTTP_SERVER_URL=${ROLLUP_HTTP_SERVER_URL} entr -r python3 hospital/api/server.py
+	ls hospital/**/*.py | PYTHONPATH=$$(pwd):${PYTHONPATH} GRAPHQL_SERVER_URL=${GRAPHQL_SERVER_URL} ROLLUP_HTTP_SERVER_URL=${ROLLUP_HTTP_SERVER_URL} entr -r python3 hospital/api/server.py
